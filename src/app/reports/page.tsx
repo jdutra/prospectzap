@@ -43,14 +43,17 @@ export default function ReportsPage() {
   const [baixoScore, setBaixoScore] = useState<EmpresaSimples[]>([]);
   const [carregando, setCarregando] = useState(false);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     setCarregando(true);
+    setErro(null);
     Promise.all([dadosPorCategoria(), dadosPorBairro()])
       .then(([cats, bairrs]) => {
         setCategorias(cats);
         setBairros(bairrs);
       })
+      .catch((e) => setErro(String(e)))
       .finally(() => setCarregando(false));
   }, []);
 
@@ -105,6 +108,12 @@ export default function ReportsPage() {
         {carregando && (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={20} className="animate-spin text-gray-600" />
+          </div>
+        )}
+
+        {erro && (
+          <div className="max-w-xl mx-auto mt-8 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            Erro ao carregar dados: {erro}
           </div>
         )}
 

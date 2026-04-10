@@ -116,9 +116,10 @@ export async function listarBairros(): Promise<string[]> {
 export async function dadosPorCategoria() {
   const { data, error } = await supabase.rpc("run_select_query", {
     sql: `
-      SELECT categoria_principal, COUNT(*) as total,
-             ROUND(AVG(nota_google)::numeric, 2) as media_nota,
-             COUNT(CASE WHEN tem_site THEN 1 END) as com_site
+      SELECT categoria_principal,
+             COUNT(*)::int                           AS total,
+             ROUND(AVG(nota_google)::numeric, 2)     AS media_nota,
+             COUNT(CASE WHEN tem_site THEN 1 END)::int AS com_site
       FROM empresas_londrina
       GROUP BY categoria_principal
       ORDER BY total DESC
@@ -126,14 +127,17 @@ export async function dadosPorCategoria() {
     `,
   });
   if (error) console.error("dadosPorCategoria:", error);
-  return Array.isArray(data) ? data : [];
+  const rows: Record<string, unknown>[] = Array.isArray(data) ? data : [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return rows.map((r) => ({ ...r, total: Number(r.total), media_nota: Number(r.media_nota) })) as any[];
 }
 
 export async function dadosPorBairro() {
   const { data, error } = await supabase.rpc("run_select_query", {
     sql: `
-      SELECT bairro, COUNT(*) as total,
-             ROUND(AVG(nota_google)::numeric, 2) as media_nota
+      SELECT bairro,
+             COUNT(*)::int                        AS total,
+             ROUND(AVG(nota_google)::numeric, 2)  AS media_nota
       FROM empresas_londrina
       WHERE bairro IS NOT NULL AND bairro != 'Londrina'
       GROUP BY bairro
@@ -142,7 +146,9 @@ export async function dadosPorBairro() {
     `,
   });
   if (error) console.error("dadosPorBairro:", error);
-  return Array.isArray(data) ? data : [];
+  const rows: Record<string, unknown>[] = Array.isArray(data) ? data : [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return rows.map((r) => ({ ...r, total: Number(r.total), media_nota: Number(r.media_nota) })) as any[];
 }
 
 export async function empresasSemPresencaDigital(categoria?: string) {
