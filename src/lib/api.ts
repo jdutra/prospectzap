@@ -114,7 +114,7 @@ export async function listarBairros(): Promise<string[]> {
 // ── Dados para Reports ────────────────────────────────────────────────────────
 
 export async function dadosPorCategoria() {
-  const { data } = await supabase.rpc("run_select_query", {
+  const { data, error } = await supabase.rpc("run_select_query", {
     sql: `
       SELECT categoria_principal, COUNT(*) as total,
              ROUND(AVG(nota_google)::numeric, 2) as media_nota,
@@ -125,11 +125,12 @@ export async function dadosPorCategoria() {
       LIMIT 20
     `,
   });
-  return data ? JSON.parse(data) : [];
+  if (error) console.error("dadosPorCategoria:", error);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function dadosPorBairro() {
-  const { data } = await supabase.rpc("run_select_query", {
+  const { data, error } = await supabase.rpc("run_select_query", {
     sql: `
       SELECT bairro, COUNT(*) as total,
              ROUND(AVG(nota_google)::numeric, 2) as media_nota
@@ -140,7 +141,8 @@ export async function dadosPorBairro() {
       LIMIT 20
     `,
   });
-  return data ? JSON.parse(data) : [];
+  if (error) console.error("dadosPorBairro:", error);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function empresasSemPresencaDigital(categoria?: string) {
@@ -152,8 +154,9 @@ export async function empresasSemPresencaDigital(categoria?: string) {
   if (categoria) sql += ` AND categoria_principal = '${categoria.replace(/'/g, "''")}'`;
   sql += " ORDER BY total_avaliacoes DESC NULLS LAST LIMIT 50";
 
-  const { data } = await supabase.rpc("run_select_query", { sql });
-  return data ? JSON.parse(data) : [];
+  const { data, error } = await supabase.rpc("run_select_query", { sql });
+  if (error) console.error("empresasSemPresencaDigital:", error);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function empresasBaixoScore(categoria?: string) {
@@ -165,6 +168,7 @@ export async function empresasBaixoScore(categoria?: string) {
   if (categoria) sql += ` AND categoria_principal = '${categoria.replace(/'/g, "''")}'`;
   sql += " ORDER BY nota_google ASC, total_avaliacoes DESC NULLS LAST LIMIT 50";
 
-  const { data } = await supabase.rpc("run_select_query", { sql });
-  return data ? JSON.parse(data) : [];
+  const { data, error } = await supabase.rpc("run_select_query", { sql });
+  if (error) console.error("empresasBaixoScore:", error);
+  return Array.isArray(data) ? data : [];
 }
