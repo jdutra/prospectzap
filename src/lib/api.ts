@@ -114,67 +114,80 @@ export async function listarBairros(): Promise<string[]> {
 // ── Dados para Reports ────────────────────────────────────────────────────────
 
 export async function dadosPorCategoria() {
-  const { data, error } = await supabase.rpc("run_select_query", {
-    sql: `
-      SELECT categoria_principal,
-             COUNT(*)::int                           AS total,
-             ROUND(AVG(nota_google)::numeric, 2)     AS media_nota,
-             COUNT(CASE WHEN tem_site THEN 1 END)::int AS com_site
-      FROM empresas_londrina
-      GROUP BY categoria_principal
-      ORDER BY total DESC
-      LIMIT 20
-    `,
-  });
-  if (error) console.error("dadosPorCategoria:", error);
-  const rows: Record<string, unknown>[] = Array.isArray(data) ? data : [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return rows.map((r) => ({ ...r, total: Number(r.total), media_nota: Number(r.media_nota) })) as any[];
+  const { data, error } = await supabase
+    .from("empresas_londrina")
+    .select("categoria_principal, nota_google, tem_site");
+  if (error) { console.error("dadosPorCategoria:", error); return []; }
+
+  const map: Record<string, { total: number; notas: number[]; com_site: number }> = {};
+  for (const r of data ?? []) {
+    const cat = r.categoria_principal ?? "Outros";
+    if (!map[cat]) map[cat] = { total: 0, notas: [], com_site: 0 };
+    map[cat].total++;
+    if (r.nota_google) map[cat].notas.push(r.nota_google);
+    if (r.tem_site) map[cat].com_site++;
+  }
+  return Object.entries(map)
+    .map(([categoria_principal, v]) => ({
+      categoria_principal,
+      total: v.total,
+      media_nota: v.notas.length ? Math.round((v.notas.reduce((a, b) => a + b, 0) / v.notas.length) * 100) / 100 : 0,
+      com_site: v.com_site,
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 20);
 }
 
 export async function dadosPorBairro() {
-  const { data, error } = await supabase.rpc("run_select_query", {
-    sql: `
-      SELECT bairro,
-             COUNT(*)::int                        AS total,
-             ROUND(AVG(nota_google)::numeric, 2)  AS media_nota
-      FROM empresas_londrina
-      WHERE bairro IS NOT NULL AND bairro != 'Londrina'
-      GROUP BY bairro
-      ORDER BY total DESC
-      LIMIT 20
-    `,
-  });
-  if (error) console.error("dadosPorBairro:", error);
-  const rows: Record<string, unknown>[] = Array.isArray(data) ? data : [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return rows.map((r) => ({ ...r, total: Number(r.total), media_nota: Number(r.media_nota) })) as any[];
+  const { data, error } = await supabase
+    .from("empresas_londrina")
+    .select("bairro, nota_google")
+    .not("bairro", "is", null)
+    .neq("bairro", "Londrina");
+  if (error) { console.error("dadosPorBairro:", error); return []; }
+
+  const map: Record<string, { total: number; notas: number[] }> = {};
+  for (const r of data ?? []) {
+    const b = r.bairro ?? "";
+    if (!b) continue;
+    if (!map[b]) map[b] = { total: 0, notas: [] };
+    map[b].total++;
+    if (r.nota_google) map[b].notas.push(r.nota_google);
+  }
+  return Object.entries(map)
+    .map(([bairro, v]) => ({
+      bairro,
+      total: v.total,
+      media_nota: v.notas.length ? Math.round((v.notas.reduce((a, b) => a + b, 0) / v.notas.length) * 100) / 100 : 0,
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 20);
 }
 
 export async function empresasSemPresencaDigital(categoria?: string) {
-  let sql = `
-    SELECT nome, categoria_principal, bairro, nota_google, total_avaliacoes, telefone, score_prospeccao
-    FROM empresas_londrina
-    WHERE tem_site = false AND tem_instagram = false
-  `;
-  if (categoria) sql += ` AND categoria_principal = '${categoria.replace(/'/g, "''")}'`;
-  sql += " ORDER BY total_avaliacoes DESC NULLS LAST LIMIT 50";
-
-  const { data, error } = await supabase.rpc("run_select_query", { sql });
+  let query = supabase
+    .from("empresas_londrina")
+    .select("nome, categoria_principal, bairro, nota_google, total_avaliacoes, telefone, score_prospeccao")
+    .eq("tem_site", false)
+    .eq("tem_instagram", false)
+    .order("total_avaliacoes", { ascending: false, nullsFirst: false })
+    .limit(50);
+  if (categoria) query = query.eq("categoria_principal", categoria);
+  const { data, error } = await query;
   if (error) console.error("empresasSemPresencaDigital:", error);
-  return Array.isArray(data) ? data : [];
+  return data ?? [];
 }
 
 export async function empresasBaixoScore(categoria?: string) {
-  let sql = `
-    SELECT nome, categoria_principal, bairro, nota_google, total_avaliacoes, telefone
-    FROM empresas_londrina
-    WHERE nota_google < 3.5 AND nota_google IS NOT NULL
-  `;
-  if (categoria) sql += ` AND categoria_principal = '${categoria.replace(/'/g, "''")}'`;
-  sql += " ORDER BY nota_google ASC, total_avaliacoes DESC NULLS LAST LIMIT 50";
-
-  const { data, error } = await supabase.rpc("run_select_query", { sql });
+  let query = supabase
+    .from("empresas_londrina")
+    .select("nome, categoria_principal, bairro, nota_google, total_avaliacoes, telefone")
+    .lt("nota_google", 3.5)
+    .not("nota_google", "is", null)
+    .order("nota_google", { ascending: true })
+    .limit(50);
+  if (categoria) query = query.eq("categoria_principal", categoria);
+  const { data, error } = await query;
   if (error) console.error("empresasBaixoScore:", error);
-  return Array.isArray(data) ? data : [];
+  return data ?? [];
 }
