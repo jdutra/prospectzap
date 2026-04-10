@@ -30,7 +30,7 @@ export interface MensagemChat {
   conteudo: string;
   sql_gerado?: string;
   resultado?: {
-    rows: Empresa[];
+    rows: Record<string, unknown>[];
     count: number;
   };
   criado_em: string;
@@ -40,7 +40,7 @@ export interface RespostaChat {
   resposta: string;
   sql_gerado: string;
   resultado: {
-    rows: Empresa[];
+    rows: Record<string, unknown>[];
     count: number;
   } | null;
   erro: string | null;
