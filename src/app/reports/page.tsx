@@ -44,6 +44,9 @@ export default function ReportsPage() {
   const [carregando, setCarregando] = useState(false);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     setCarregando(true);
@@ -142,55 +145,59 @@ export default function ReportsPage() {
                 <TrendingUp size={14} className="text-brand-500" />
                 <h3 className="text-sm font-medium text-white">Empresas por Categoria</h3>
               </div>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={categorias.slice(0, 15)} layout="vertical" margin={{ left: 160, right: 20 }}>
-                  <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis
-                    type="category"
-                    dataKey="categoria_principal"
-                    tick={{ fill: "#9ca3af", fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={155}
-                  />
-                  <Tooltip
-                    contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8 }}
-                    labelStyle={{ color: "#e5e7eb", fontSize: 12 }}
-                    itemStyle={{ color: "#f97316", fontSize: 12 }}
-                  />
-                  <Bar dataKey="total" fill="#f97316" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {mounted && (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={categorias.slice(0, 15)} layout="vertical" margin={{ left: 160, right: 20 }}>
+                    <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis
+                      type="category"
+                      dataKey="categoria_principal"
+                      tick={{ fill: "#9ca3af", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={155}
+                    />
+                    <Tooltip
+                      contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8 }}
+                      labelStyle={{ color: "#e5e7eb", fontSize: 12 }}
+                      itemStyle={{ color: "#f97316", fontSize: 12 }}
+                    />
+                    <Bar dataKey="total" fill="#f97316" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/* Top bairros + pizza */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-[#161616] border border-white/6 rounded-xl p-5">
                 <h3 className="text-sm font-medium text-white mb-4">Top 10 Bairros</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={bairros.slice(0, 10)} layout="vertical" margin={{ left: 120, right: 20 }}>
-                    <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis
-                      type="category"
-                      dataKey="bairro"
-                      tick={{ fill: "#9ca3af", fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                      width={115}
-                    />
-                    <Tooltip
-                      contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8 }}
-                      labelStyle={{ color: "#e5e7eb", fontSize: 12 }}
-                      itemStyle={{ color: "#fb923c", fontSize: 12 }}
-                    />
-                    <Bar dataKey="total" fill="#fb923c" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                {mounted && (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={bairros.slice(0, 10)} layout="vertical" margin={{ left: 120, right: 20 }}>
+                      <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis
+                        type="category"
+                        dataKey="bairro"
+                        tick={{ fill: "#9ca3af", fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                        width={115}
+                      />
+                      <Tooltip
+                        contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8 }}
+                        labelStyle={{ color: "#e5e7eb", fontSize: 12 }}
+                        itemStyle={{ color: "#fb923c", fontSize: 12 }}
+                      />
+                      <Bar dataKey="total" fill="#fb923c" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
 
               <div className="bg-[#161616] border border-white/6 rounded-xl p-5">
                 <h3 className="text-sm font-medium text-white mb-4">Distribuição por Porte</h3>
-                <ResponsiveContainer width="100%" height={220}>
+                {mounted && <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={[
@@ -217,7 +224,7 @@ export default function ReportsPage() {
                       wrapperStyle={{ fontSize: 12, color: "#9ca3af" }}
                     />
                   </PieChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer>}
               </div>
             </div>
           </div>
