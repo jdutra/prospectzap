@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, X, Star, Phone, ExternalLink, Loader2 } from "lucide-react";
+import {
+  Search, Filter, X, Star, Phone, ExternalLink, Loader2,
+  Globe, Instagram, Mail, MessageCircle,
+} from "lucide-react";
 import { buscarEmpresas, listarCategorias, listarBairros } from "@/lib/api";
 import type { Empresa, FiltrosBusca } from "@/lib/types";
 
@@ -257,11 +260,19 @@ export default function BuscaPage() {
 }
 
 function EmpresaCard({ emp }: { emp: Empresa }) {
+  const waDigits = (emp.telefone ?? "").replace(/\D/g, "");
+  const waLink   = emp.tem_whatsapp && waDigits.length >= 10
+    ? `https://wa.me/${waDigits}`
+    : null;
+
   return (
     <div className="bg-[#161616] border border-white/6 rounded-xl p-4 hover:border-white/10 transition-colors">
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0">
           <h3 className="text-sm font-medium text-white truncate">{emp.nome}</h3>
+          {emp.razao_social && emp.razao_social !== emp.nome && (
+            <p className="text-[10px] text-gray-600 truncate mt-0.5">{emp.razao_social}</p>
+          )}
           <p className="text-xs text-gray-500 mt-0.5">{emp.categoria_principal}</p>
         </div>
         {emp.nota_google && (
@@ -288,6 +299,14 @@ function EmpresaCard({ emp }: { emp: Empresa }) {
             {emp.porte_estimado}
           </span>
         )}
+        {emp.cnpj_porte && (
+          <span
+            className="px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-400"
+            title="Porte oficial RFB"
+          >
+            {emp.cnpj_porte}
+          </span>
+        )}
         {emp.total_avaliacoes && (
           <span className="text-[10px] text-gray-600">
             {emp.total_avaliacoes} avaliações
@@ -295,19 +314,66 @@ function EmpresaCard({ emp }: { emp: Empresa }) {
         )}
       </div>
 
-      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/5">
+      <div className="flex items-center gap-1 flex-wrap mt-3 pt-3 border-t border-white/5">
         {emp.telefone && (
-          <span className="flex items-center gap-1 text-xs text-gray-600">
+          <a
+            href={`tel:${emp.telefone}`}
+            title={emp.telefone}
+            className="flex items-center gap-1 px-2 py-1 rounded text-[11px] text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+          >
             <Phone size={10} />
-            {emp.telefone}
-          </span>
+            <span className="font-mono">{emp.telefone}</span>
+          </a>
+        )}
+        {waLink && (
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`WhatsApp ${emp.telefone}`}
+            className="p-1.5 rounded text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/15 transition-colors"
+          >
+            <MessageCircle size={12} />
+          </a>
+        )}
+        {emp.site && (
+          <a
+            href={emp.site}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={emp.site}
+            className="p-1.5 rounded text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/15 transition-colors"
+          >
+            <Globe size={12} />
+          </a>
+        )}
+        {emp.instagram && (
+          <a
+            href={emp.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={emp.instagram}
+            className="p-1.5 rounded text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/15 transition-colors"
+          >
+            <Instagram size={12} />
+          </a>
+        )}
+        {emp.email && (
+          <a
+            href={`mailto:${emp.email}`}
+            title={emp.email}
+            className="p-1.5 rounded text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/15 transition-colors"
+          >
+            <Mail size={12} />
+          </a>
         )}
         {emp.link_maps && (
           <a
             href={emp.link_maps}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto text-gray-700 hover:text-brand-500 transition-colors"
+            title="Ver no Google Maps"
+            className="ml-auto p-1.5 text-gray-600 hover:text-brand-500 transition-colors"
           >
             <ExternalLink size={12} />
           </a>
