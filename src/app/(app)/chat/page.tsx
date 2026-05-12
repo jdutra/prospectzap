@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Loader2, Database, ChevronDown, ChevronUp, User, Zap } from "lucide-react";
 import { enviarPergunta } from "@/lib/api";
 import type { MensagemChat, RespostaChat } from "@/lib/types";
-import ResultsTable from "@/components/ResultsTable";
 
 const SUGESTOES = [
   "Quantos restaurantes tem no Centro com nota acima de 4?",
@@ -148,14 +147,12 @@ export default function ChatPage() {
                     </p>
                   </div>
 
-                  {/* Tabela de resultados */}
+                  {/* Tabela de resultados — UI temporariamente desativada;
+                      use /busca pra navegar a base com filtros visuais. */}
                   {msg.resultado && msg.resultado.count > 0 && (
-                    <div className="mt-3">
-                      <ResultsTable
-                        rows={msg.resultado.rows}
-                        count={msg.resultado.count}
-                      />
-                    </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                      {msg.resultado.count} empresas retornadas. Use a aba Busca para visualizar.
+                    </p>
                   )}
 
                   {/* SQL gerado (toggle) */}

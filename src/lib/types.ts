@@ -136,3 +136,32 @@ export interface TrendingItem {
   termo: string;
   mencoes: number;
 }
+
+// ── Tipos usados pelas páginas Next.js (/busca e /chat) ─────────────────────
+
+export interface FiltrosBusca {
+  termo?: string;
+  categoria?: string;
+  bairro?: string;
+  notaMin?: number;
+  porte?: string;
+  temSite?: boolean;
+  temWhatsapp?: boolean;
+  ordenar?: "nota" | "avaliacoes" | "score" | "nome";
+}
+
+export interface MensagemChat {
+  id: string;
+  role: "user" | "assistant";
+  conteudo: string;
+  criado_em: string;
+  resultado?: { rows: Empresa[]; count: number };
+  sql_gerado?: string;
+}
+
+export interface RespostaChat {
+  resposta: string;
+  sql_gerado: string;
+  resultado: { rows: Empresa[]; count: number };
+  erro: string | null;
+}
